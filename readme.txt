@@ -1,4 +1,4 @@
-A disassembly of Sonic the Hedgehog 2 for the Sega Mega Drive/Genesis.
+The complete source code of Sonic The Hedgehog: STRIKERS, forked from a disassembly of Sonic the Hedgehog 2 for the Sega Mega Drive/Genesis.
 
 To build this, use build.bat if you're a Windows user, or build.sh otherwise. The built ROM will be called 's2built.bin'.
 
@@ -8,5 +8,5 @@ Non-Windows users will also need to install GCC's C compiler, as the rest of the
 
 DISCLAIMER:
 Any and all content presented in this repository is presented for informational and educational purposes only.
-Commercial usage is expressly prohibited. Sonic Retro claims no ownership of any code in these repositories.
+Commercial usage is expressly prohibited. BlueSpeedster and Sonic Retro claims no ownership of any code in these repositories.
 You assume any and all responsibility for using this content responsibly. Sonic Retro claims no responsibiliy or warranty.
