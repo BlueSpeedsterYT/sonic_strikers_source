@@ -21,7 +21,7 @@ x_sub =			 $A ; and $B
 y_pos =			 $C ; and $D ... some objects use $E and $F as well when extra precision is required ... screen-space objects use y_pixel instead
 y_sub =			 $E ; and $F
 priority =		$18 ; 0 = front
-width_pixels =		$19
+width_pixels =		$14
 mapping_frame =		$1A
 ; ---------------------------------------------------------------------------
 ; conventions followed by most objects:
@@ -31,8 +31,8 @@ y_radius =		$16 ; collision height / 2
 x_radius =		$17 ; collision width / 2
 anim_frame =		$1B
 anim =			$1C
-prev_anim =		$1D
-anim_frame_duration =	$1E
+next_anim =		$1D
+anim_frame_duration =	$23
 status =		$22 ; note: exact meaning depends on the object... for sonic/tails: bit 0: leftfacing. bit 1: inair. bit 2: spinning. bit 3: onobject. bit 4: rolljumping. bit 5: pushing. bit 6: underwater.
 routine =		$24
 routine_secondary =	$25
@@ -41,12 +41,12 @@ angle =			$26 ; angle about the z axis (360 degrees = 256)
 ; conventions followed by many objects but NOT sonic/tails:
 collision_flags =	$20
 collision_property =	$21
-respawn_index =		$23
+respawn_index =		$1E
 subtype =		$28
 ; ---------------------------------------------------------------------------
 ; conventions specific to sonic/tails (Obj01, Obj02, and ObjDB):
 ; note: $1F, $20, and $21 are unused and available
-inertia =		$14 ; and $15 ; directionless representation of speed... not updated in the air
+inertia =		$20 ; and $21 ; directionless representation of speed... not updated in the air
 flip_angle =		$27 ; angle about the x axis (360 degrees = 256) (twist/tumble)
 air_left =		$28
 flip_turned =		$29 ; 0 for normal, 1 to invert flipping (it's a 180 degree rotation about the axis of Sonic's spine, so he stays in the same position but looks turned around)
@@ -69,6 +69,7 @@ jumping =		$3C
 interact =		$3D ; RAM address of the last object Sonic stood on, minus $FFFFB000 and divided by $40
 top_solid_bit =   $3E ; the bit to check for top solidity (either $C or $E)
 lrb_solid_bit =		$3F ; the bit to check for left/right/bottom solidity (either $D or $F)
+;double_jump_flag =	$40 ; byte ; meaning depends on current character, see SCHG for details (Ported from Sonic 3)
 ; ---------------------------------------------------------------------------
 ; conventions followed by several objects but NOT sonic/tails:
 y_pixel =		2+x_pos ; and 3+x_pos ; y coordinate for objects using screen-space coordinate system
@@ -329,6 +330,7 @@ ptrsize :=	1
 idstart :=	0
 
 VintID_Lag =		id(Vint_Lag_ptr) ; 0
+VintID_PCM =		id(Vint_PCM_ptr) ; 1
 VintID_SEGA =		id(Vint_SEGA_ptr) ; 2
 VintID_Title =		id(Vint_Title_ptr) ; 4
 VintID_Unused6 =	id(Vint_Unused6_ptr) ; 6
@@ -338,7 +340,6 @@ VintID_TitleCard =	id(Vint_TitleCard_ptr) ; C
 VintID_UnusedE =	id(Vint_UnusedE_ptr) ; E
 VintID_Pause =		id(Vint_Pause_ptr) ; 10
 VintID_Fade =		id(Vint_Fade_ptr) ; 12
-VintID_PCM =		id(Vint_PCM_ptr) ; 14
 VintID_Menu =		id(Vint_Menu_ptr) ; 16
 VintID_Ending =		id(Vint_Ending_ptr) ; 18
 VintID_CtrlDMA =	id(Vint_CtrlDMA_ptr) ; 1A
@@ -407,6 +408,9 @@ PalID_SS3_2p =	id(PalPtr_SS3_2p) ; 24
 PalID_OOZ_B =	id(PalPtr_OOZ_B) ; 25
 PalID_Menu =	id(PalPtr_Menu) ; 26
 PalID_Result =	id(PalPtr_Result) ; 27
+PalID_Knux =	id(PalPtr_Knux) ; 28
+PalID_CPZ_K_U =	id(PalPtr_CPZ_K_U) ; 29
+PalID_ARZ_K_U =	id(PalPtr_ARZ_K_U) ; 30
 
 ; PLC IDs
 offset :=	ArtLoadCues
@@ -480,6 +484,10 @@ PLCID_Tornado =		id(PLCptr_Tornado) ; 3F
 PLCID_Capsule =		id(PLCptr_Capsule) ; 40
 PLCID_Explosion =	id(PLCptr_Explosion) ; 41
 PLCID_ResultsTails =	id(PLCptr_ResultsTails) ; 42
+PLCID_KnucklesLife =	id(PLCptr_KnucklesLife)
+PLCID_Std2Knuckles =	id(PLCptr_Std2Knuckles)
+PLCID_ResultsKnuckles =	id(PLCptr_ResultsKnuckles)
+PLCID_SignpostKnuckles =	id(PLCptr_SignpostKnuckles)
 
 ; Object IDs
 offset :=	Obj_Index
@@ -707,6 +715,7 @@ ObjID_ContinueText =		id(ObjPtr_ContinueText)		; DA
 ObjID_ContinueIcons =		id(ObjPtr_ContinueIcons)	; DA
 ObjID_ContinueChars =		id(ObjPtr_ContinueChars)	; DB
 ObjID_RingPrize =		id(ObjPtr_RingPrize)		; DC
+ObjID_Knuckles =		id(ObjPtr_Knuckles)	
 
 ; Music IDs
 offset :=	zMasterPlaylist
@@ -841,6 +850,9 @@ SndID_Error =		id(SndPtr_Error)		; ED
 SndID_MechaSonicBuzz =	id(SndPtr_MechaSonicBuzz)	; EE
 SndID_LargeLaser =	id(SndPtr_LargeLaser)		; EF
 SndID_OilSlide =	id(SndPtr_OilSlide)		; F0
+SndID_WallGrab =	id(SndPtr_WallGrab)
+SndID_Land =		id(SndPtr_Land)
+SndID_Slide =		id(SndPtr_Slide)
 SndID__End =		id(SndPtr__End)			; F1
     if MOMPASS == 2
 	if SndID__End > CmdID__First
@@ -1191,6 +1203,8 @@ Underwater_palette_line2:	ds.b palette_line_size
 Underwater_palette_line3:	ds.b palette_line_size
 Underwater_palette_line4:	ds.b palette_line_size
 
+Bonus_Stage_Flag equ $FFFFF48E ; Sonic 2 Delta Bonus Flag
+
 				ds.b	$500	; $FFFFF100-$FFFFF5FF ; unused, leftover from the Sonic 1 sound driver (and used by it when you port it to Sonic 2)
 
 Game_Mode:			ds.w	1	; 1 byte ; see GameModesArray (master level trigger, Mstr_Lvl_Trigger)
@@ -1232,7 +1246,7 @@ Sprite_count:			ds.b	1	; the number of sprites drawn in the current frame
 PalCycle_Frame:			ds.w	1	; ColorID loaded in PalCycle
 PalCycle_Timer:			ds.w	1	; number of frames until next PalCycle call
 RNG_seed:			ds.l	1	; used for random number generation
-Game_paused:			ds.w	1	
+Game_paused:			ds.w	1
 				ds.b	4	; $FFFFF63C-$FFFFF63F ; seems unused
 DMA_data_thunk:			ds.w	1	; Used as a RAM holder for the final DMA command word. Data will NOT be preserved across V-INTs, so consider this space reserved.
 				ds.w	1	; $FFFFF642-$FFFFF643 ; seems unused
@@ -1282,14 +1296,14 @@ MiscLevelVariables_End
 Plc_Buffer:			ds.b	$60	; Pattern load queue (each entry is 6 bytes)
 Plc_Buffer_Only_End:
 				; these seem to store nemesis decompression state so PLC processing can be spread out across frames
-Plc_Buffer_Reg0:		ds.l	1	
-Plc_Buffer_Reg4:		ds.l	1	
-Plc_Buffer_Reg8:		ds.l	1	
-Plc_Buffer_RegC:		ds.l	1	
-Plc_Buffer_Reg10:		ds.l	1	
-Plc_Buffer_Reg14:		ds.l	1	
+Plc_Buffer_Reg0:		ds.l	1
+Plc_Buffer_Reg4:		ds.l	1
+Plc_Buffer_Reg8:		ds.l	1
+Plc_Buffer_RegC:		ds.l	1
+Plc_Buffer_Reg10:		ds.l	1
+Plc_Buffer_Reg14:		ds.l	1
 Plc_Buffer_Reg18:		ds.w	1	; amount of current entry remaining to decompress
-Plc_Buffer_Reg1A:		ds.w	1	
+Plc_Buffer_Reg1A:		ds.w	1
 				ds.b	4	; seems unused
 Plc_Buffer_End:
 
@@ -1605,7 +1619,7 @@ Two_player_mode_copy:		ds.w	1
 Options_menu_box:		ds.b	1
 				ds.b	1	; $FFFFFF8D ; unused
 Total_Bonus_Countdown:		ds.w	1
-				
+
 Level_Music:			ds.w	1
 Bonus_Countdown_3:		ds.w	1
 				ds.b	4	; $FFFFFF94-$FFFFFF97 ; seems unused
@@ -1914,7 +1928,7 @@ Z80_Reset =			$A11200
 Security_Addr =			$A14000
 
 ; ---------------------------------------------------------------------------
-; I/O Area 
+; I/O Area
 HW_Version =				$A10001
 HW_Port_1_Data =			$A10003
 HW_Port_2_Data =			$A10005

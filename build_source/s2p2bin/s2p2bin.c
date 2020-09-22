@@ -4,7 +4,7 @@
 #include <string.h>
 
 #include "clownlzss/saxman.h"
-#include "lz_comp2/LZSS.h"
+#include "KensSaxComp/S-Compressor.h"
 
 const char* codeFileName = NULL;
 const char* romFileName = NULL;
@@ -171,10 +171,7 @@ bool buildRom(FILE* from, FILE* to)
 
 			if (accurate_compression)
 			{
-				const size_t position_before = ftell(to);
-				Encode(from, to, length);
-				putc(0x4E, to);	// For some reason, the original ROMs have this stray byte - not even the authentic original compressor replicates it
-				compressedLength = ftell(to) - position_before;
+				compressedLength = SComp3(from, srcStart, length, to, start, false);
 			}
 			else
 			{
